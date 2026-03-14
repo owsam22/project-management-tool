@@ -1,0 +1,50 @@
+import * as projectService from '../services/project.service.js';
+
+export const create = async (req, res, next) => {
+  try {
+    const { name, description } = req.body;
+    if (!name) throw { statusCode: 400, message: 'Project name is required' };
+    const project = await projectService.createProject(name, description || '', req.user.userId);
+    res.status(201).json({ status: 'success', data: project });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const list = async (req, res, next) => {
+  try {
+    const projects = await projectService.getUserProjects(req.user.userId);
+    res.status(200).json({ status: 'success', data: projects });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getById = async (req, res, next) => {
+  try {
+    const data = await projectService.getProjectById(req.params.projectId, req.user.userId);
+    res.status(200).json({ status: 'success', data });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const invite = async (req, res, next) => {
+  try {
+    const { email, role } = req.body;
+    if (!email) throw { statusCode: 400, message: 'Email is required' };
+    const member = await projectService.inviteMember(req.params.projectId, req.user.userId, email, role || 'MEMBER');
+    res.status(201).json({ status: 'success', data: member });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const leave = async (req, res, next) => {
+  try {
+    await projectService.leaveProject(req.params.projectId, req.user.userId);
+    res.status(200).json({ status: 'success', message: 'Left the project' });
+  } catch (error) {
+    next(error);
+  }
+};
