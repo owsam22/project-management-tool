@@ -5,9 +5,29 @@ import { useRouter, useParams } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
-import { connectSocket, disconnectSocket, getSocket } from '@/lib/socket';
+import { connectSocket, disconnectSocket } from '@/lib/socket';
 import Link from 'next/link';
 
+// ========== TYPES ==========
+type User = { id: string; name: string };
+type Member = { _id: string; userId: User };
+type Project = { _id: string; name: string; members: Member[] };
+type Board = { _id: string; name: string };
+type List = { _id: string; name: string };
+type Task = {
+  _id: string;
+  title: string;
+  priority: 'URGENT' | 'HIGH' | 'MEDIUM' | 'LOW';
+  health: 'HEALTHY' | 'WARNING' | 'AT_RISK';
+  dueDate?: string;
+  assignees?: { _id: string; name: string }[];
+  status?: string;
+  description?: string;
+};
+type Comment = { _id: string; message: string; createdAt: string; userId: User };
+type Decision = { _id: string; problem: string; options: string; finalDecision: string; reason: string; approvedBy?: User; createdAt: string };
+
+// ========== MAIN PAGE ==========
 export default function ProjectPage() {
   const { projectId } = useParams();
   const { isAuthenticated, user } = useAuthStore();
@@ -23,9 +43,10 @@ export default function ProjectPage() {
   }, [isAuthenticated, router]);
 
   useEffect(() => {
+    if (!projectId || !user) return;
     const socket = connectSocket();
     socket.emit('join_project', projectId);
-    socket.emit('user_online', user?.id);
+    socket.emit('user_online', user.id);
 
     socket.on('task_created', () => queryClient.invalidateQueries({ queryKey: ['tasks'] }));
     socket.on('task_updated', () => queryClient.invalidateQueries({ queryKey: ['tasks'] }));
@@ -41,13 +62,13 @@ export default function ProjectPage() {
     };
   }, [projectId, user, queryClient]);
 
-  const { data: projectData } = useQuery({
+  const { data: projectData } = useQuery<{ project: Project }>({
     queryKey: ['project', projectId],
     queryFn: () => api.get(`/projects/${projectId}`).then((r) => r.data.data),
     enabled: isAuthenticated && !!projectId,
   });
 
-  const { data: boards } = useQuery({
+  const { data: boards } = useQuery<Board[]>({
     queryKey: ['boards', projectId],
     queryFn: () => api.get(`/boards/project/${projectId}`).then((r) => r.data.data),
     enabled: isAuthenticated && !!projectId,
@@ -73,9 +94,8 @@ export default function ProjectPage() {
           <h1 className="text-lg font-bold text-white">{projectData?.project?.name || 'Project'}</h1>
         </div>
         <div className="flex items-center gap-3">
-          {/* Members avatars */}
           <div className="flex -space-x-2">
-            {projectData?.members?.slice(0, 5).map((m: any) => (
+            {projectData?.project?.members?.slice(0, 5).map((m: Member) => (
               <div key={m._id} className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-bold border-2 border-slate-900" title={m.userId?.name}>
                 {m.userId?.name?.charAt(0).toUpperCase()}
               </div>
@@ -154,13 +174,14 @@ export default function ProjectPage() {
   );
 }
 
-// ========== KANBAN BOARD ==========
-function KanbanBoard({ boardId, projectId }: { boardId: string; projectId: string }) {
+// ========== KANBAN BOARD & LIST ==========
+type KanbanBoardProps = { boardId: string; projectId: string };
+function KanbanBoard({ boardId, projectId }: KanbanBoardProps) {
   const queryClient = useQueryClient();
   const [newTaskTitle, setNewTaskTitle] = useState<Record<string, string>>({});
   const [selectedTask, setSelectedTask] = useState<string | null>(null);
 
-  const { data: lists } = useQuery({
+  const { data: lists } = useQuery<List[]>({
     queryKey: ['lists', boardId],
     queryFn: () => api.get(`/boards/${boardId}/lists`).then((r) => r.data.data),
   });
@@ -168,31 +189,34 @@ function KanbanBoard({ boardId, projectId }: { boardId: string; projectId: strin
   return (
     <>
       <div className="flex gap-5 overflow-x-auto pb-4">
-        {lists?.map((list: any) => (
+        {lists?.map((list) => (
           <KanbanList
             key={list._id}
             list={list}
             projectId={projectId}
             newTaskTitle={newTaskTitle[list._id] || ''}
-            onTitleChange={(val) => setNewTaskTitle((prev) => ({ ...prev, [list._id]: val }))}
+            onTitleChange={(val: string) => setNewTaskTitle((prev) => ({ ...prev, [list._id]: val }))}
             onTaskClick={setSelectedTask}
           />
         ))}
       </div>
 
-      {/* Task Detail Modal */}
-      {selectedTask && (
-        <TaskDetailModal taskId={selectedTask} onClose={() => setSelectedTask(null)} />
-      )}
+      {selectedTask && <TaskDetailModal taskId={selectedTask} onClose={() => setSelectedTask(null)} />}
     </>
   );
 }
 
-// ========== KANBAN LIST ==========
-function KanbanList({ list, projectId, newTaskTitle, onTitleChange, onTaskClick }: any) {
+type KanbanListProps = {
+  list: List;
+  projectId: string;
+  newTaskTitle: string;
+  onTitleChange: (val: string) => void;
+  onTaskClick: (taskId: string) => void;
+};
+function KanbanList({ list, projectId, newTaskTitle, onTitleChange, onTaskClick }: KanbanListProps) {
   const queryClient = useQueryClient();
 
-  const { data: tasks } = useQuery({
+  const { data: tasks } = useQuery<Task[]>({
     queryKey: ['tasks', list._id],
     queryFn: () => api.get(`/tasks/list/${list._id}`).then((r) => r.data.data),
   });
@@ -219,12 +243,12 @@ function KanbanList({ list, projectId, newTaskTitle, onTitleChange, onTaskClick 
     MEDIUM: 'bg-yellow-500/20 text-yellow-400',
     LOW: 'bg-green-500/20 text-green-400',
   };
-
   const healthIcons: Record<string, string> = {
     HEALTHY: '💚',
     WARNING: '⚠️',
     AT_RISK: '🔴',
   };
+// Keep UI exactly the same, just type props and state as shown above.
 
   return (
     <div className="flex-shrink-0 w-72 glass rounded-xl p-4">
