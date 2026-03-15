@@ -8,6 +8,10 @@ export default function initSockets(io) {
       console.log(`[Socket] ${socket.id} joined project_${projectId}`);
     });
 
+    socket.on('error', (error) => {
+      console.error(`[Socket] Error for ${socket.id}:`, error);
+    });
+
     // Leave a project room
     socket.on('leave_project', (projectId) => {
       socket.leave(`project_${projectId}`);

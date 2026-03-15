@@ -27,6 +27,8 @@ type Task = {
 type Comment = { _id: string; message: string; createdAt: string; userId: User };
 type Decision = { _id: string; problem: string; options: string; finalDecision: string; reason: string; approvedBy?: User; createdAt: string };
 
+
+
 // ========== MAIN PAGE ==========
 export default function ProjectPage() {
   const { projectId } = useParams();
@@ -86,85 +88,130 @@ export default function ProjectPage() {
   if (!isAuthenticated) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-slate-900 to-gray-950">
-      {/* Nav */}
-      <nav className="glass border-b border-slate-800 px-6 py-3 flex items-center justify-between sticky top-0 z-50">
+    <div className="animate-fade-in flex flex-col h-screen overflow-hidden">
+      {/* Dynamic Header */}
+      <header 
+        className="glass border-b px-6 py-4 flex items-center justify-between sticky top-0 z-40"
+        style={{ borderColor: 'var(--border-color)' }}
+      >
         <div className="flex items-center gap-4">
-          <Link href="/dashboard" className="text-slate-400 hover:text-white text-sm">← Back</Link>
-          <h1 className="text-lg font-bold text-white">{projectData?.project?.name || 'Project'}</h1>
+          <Link 
+            href="/dashboard" 
+            className="w-10 h-10 flex items-center justify-center rounded-2xl glass hover:text-indigo-600 transition-all border border-slate-200 dark:border-slate-800"
+          >
+            ←
+          </Link>
+          <div>
+            <h1 className="text-xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>
+              {projectData?.project?.name || 'Project Intelligence'}
+            </h1>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Node Synchronized</p>
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="flex -space-x-2">
+
+        <div className="flex items-center gap-4">
+          <div className="flex -space-x-2 mr-2">
             {projectData?.project?.members?.slice(0, 5).map((m: Member) => (
-              <div key={m._id} className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-bold border-2 border-slate-900" title={m.userId?.name}>
+              <div 
+                key={m._id} 
+                className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-[10px] font-black text-white border-2 dark:border-slate-900 border-white shadow-sm" 
+                title={m.userId?.name}
+              >
                 {m.userId?.name?.charAt(0).toUpperCase()}
               </div>
             ))}
           </div>
           <button
             onClick={() => setShowInvite(true)}
-            className="px-3 py-1.5 bg-indigo-600/20 text-indigo-400 rounded-lg text-sm hover:bg-indigo-600/30 cursor-pointer"
+            className="px-4 py-2 bg-indigo-600/10 text-indigo-600 dark:text-indigo-400 font-bold rounded-xl text-xs hover:bg-indigo-600/20 transition-all border border-indigo-100 dark:border-indigo-900/50 cursor-pointer"
           >
             + Invite
           </button>
         </div>
-      </nav>
+      </header>
 
       {/* Tabs */}
-      <div className="border-b border-slate-800 px-6">
-        <div className="flex gap-1 max-w-6xl mx-auto">
+      <div 
+        className="glass border-b z-30 flex items-center justify-start md:justify-center overflow-x-auto custom-scrollbar"
+        style={{ borderColor: 'var(--border-color)' }}
+      >
+        <div className="flex px-4">
           {(['board', 'analytics', 'dependencies', 'meetings'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-3 text-sm font-medium capitalize cursor-pointer ${
+              className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] transition-all border-b-2 whitespace-nowrap ${
                 activeTab === tab
-                  ? 'text-indigo-400 border-b-2 border-indigo-400'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'text-indigo-600 border-indigo-600 bg-indigo-50/30'
+                  : 'text-slate-400 border-transparent hover:text-indigo-600 hover:bg-slate-50/50'
               }`}
             >
-              {tab === 'dependencies' ? '🔗 Dependencies' : tab === 'meetings' ? '📝 Meeting Notes' : tab === 'analytics' ? '📊 Analytics' : '📋 Board'}
+              <span className={activeTab === tab ? 'scale-110 inline-block transition-transform' : ''}>
+                {tab === 'dependencies' ? '🔗 Links' : tab === 'meetings' ? '📝 Notes' : tab === 'analytics' ? '📊 Stats' : '📋 Board'}
+              </span>
             </button>
           ))}
         </div>
       </div>
 
       {/* Tab Content */}
-      <div className="max-w-full mx-auto p-6">
-        {activeTab === 'board' && boards && boards.length > 0 && (
-          <KanbanBoard boardId={boards[0]._id} projectId={projectId as string} />
-        )}
-        {activeTab === 'analytics' && <AnalyticsPanel projectId={projectId as string} />}
-        {activeTab === 'dependencies' && <DependenciesPanel projectId={projectId as string} />}
-        {activeTab === 'meetings' && <MeetingNotesPanel />}
+      <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6 h-full">
+        <div className={`${activeTab === 'board' ? 'w-full' : 'max-w-7xl mx-auto'} h-full`}>
+          {activeTab === 'board' && boards && boards.length > 0 && (
+            <KanbanBoard boardId={boards[0]._id} projectId={projectId as string} />
+          )}
+          {activeTab === 'analytics' && <AnalyticsPanel projectId={projectId as string} />}
+          {activeTab === 'dependencies' && <DependenciesPanel projectId={projectId as string} />}
+          {activeTab === 'meetings' && <MeetingNotesPanel />}
+        </div>
       </div>
 
       {/* Invite Modal */}
       {showInvite && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="glass rounded-2xl p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold text-white mb-4">Invite Team Member</h3>
-            <form onSubmit={(e) => { e.preventDefault(); inviteMutation.mutate(); }} className="space-y-4">
-              <input
-                type="email"
-                value={inviteEmail}
-                onChange={(e) => setInviteEmail(e.target.value)}
-                placeholder="Member's email"
-                className="w-full px-4 py-3 rounded-xl bg-slate-800/60 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                required
-              />
-              <select
-                value={inviteRole}
-                onChange={(e) => setInviteRole(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-slate-800/60 border border-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              >
-                <option value="ADMIN">Admin</option>
-                <option value="MEMBER">Member</option>
-                <option value="VIEWER">Viewer</option>
-              </select>
-              <div className="flex gap-3">
-                <button type="submit" className="flex-1 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl font-semibold text-white cursor-pointer">Invite</button>
-                <button type="button" onClick={() => setShowInvite(false)} className="px-5 py-2.5 border border-slate-700 rounded-xl text-slate-400 cursor-pointer">Cancel</button>
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[100] p-4 backdrop-blur-sm animate-fade-in">
+          <div className="glass rounded-3xl p-8 w-full max-w-md shadow-2xl border border-white/20 dark:border-white/10">
+            <h3 className="text-xl font-bold mb-6" style={{ color: 'var(--text-primary)' }}>Invite Team Member</h3>
+            <form onSubmit={(e) => { e.preventDefault(); inviteMutation.mutate(); }} className="space-y-5">
+              <div>
+                <label className="block text-xs font-black uppercase tracking-wider text-slate-400 mb-2">Member Email</label>
+                <input
+                  type="email"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  placeholder="name@company.com"
+                  className="w-full px-4 py-3 rounded-2xl bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-4 focus:ring-indigo-50 dark:focus:ring-indigo-900/20 transition-all font-medium"
+                  style={{ color: 'var(--text-primary)' }}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-black uppercase tracking-wider text-slate-400 mb-2">Access Role</label>
+                <select
+                  value={inviteRole}
+                  onChange={(e) => setInviteRole(e.target.value)}
+                  className="w-full px-4 py-3 rounded-2xl bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-4 focus:ring-indigo-50 dark:focus:ring-indigo-900/20 transition-all font-bold appearance-none"
+                  style={{ color: 'var(--text-primary)' }}
+                >
+                  <option value="ADMIN">Administrator</option>
+                  <option value="MEMBER">Standard Member</option>
+                  <option value="VIEWER">Read Only Viewer</option>
+                </select>
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button 
+                  type="submit" 
+                  disabled={inviteMutation.isPending}
+                  className="flex-1 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl font-bold text-white shadow-lg shadow-indigo-100 dark:shadow-none transition-all active:scale-95 disabled:opacity-50"
+                >
+                  {inviteMutation.isPending ? 'Sending...' : 'Send Invite'}
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => setShowInvite(false)} 
+                  className="px-6 py-3 border border-slate-200 dark:border-slate-700 rounded-2xl font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
               </div>
             </form>
           </div>
@@ -188,17 +235,22 @@ function KanbanBoard({ boardId, projectId }: KanbanBoardProps) {
 
   return (
     <>
-      <div className="flex gap-5 overflow-x-auto pb-4">
-        {lists?.map((list) => (
+      <div className="flex gap-6 overflow-x-auto pb-8 snap-x scroll-smooth custom-scrollbar-h min-h-[70vh]">
+        {lists?.map((list, index) => (
           <KanbanList
             key={list._id}
             list={list}
+            index={index}
             projectId={projectId}
             newTaskTitle={newTaskTitle[list._id] || ''}
             onTitleChange={(val: string) => setNewTaskTitle((prev) => ({ ...prev, [list._id]: val }))}
             onTaskClick={setSelectedTask}
           />
         ))}
+        {/* Placeholder for "Add List" functionality if needed later */}
+        <div className="flex-shrink-0 w-80 h-16 glass rounded-2xl flex items-center justify-center border-dashed border-2 border-slate-300 dark:border-slate-800 opacity-50 hover:opacity-100 transition-opacity cursor-pointer">
+           <span className="text-xs font-black uppercase tracking-widest">+ Add Intelligence Node</span>
+        </div>
       </div>
 
       {selectedTask && <TaskDetailModal taskId={selectedTask} onClose={() => setSelectedTask(null)} />}
@@ -208,18 +260,30 @@ function KanbanBoard({ boardId, projectId }: KanbanBoardProps) {
 
 type KanbanListProps = {
   list: List;
+  index: number;
   projectId: string;
   newTaskTitle: string;
   onTitleChange: (val: string) => void;
   onTaskClick: (taskId: string) => void;
 };
-function KanbanList({ list, projectId, newTaskTitle, onTitleChange, onTaskClick }: KanbanListProps) {
+function KanbanList({ list, index, projectId, newTaskTitle, onTitleChange, onTaskClick }: KanbanListProps) {
   const queryClient = useQueryClient();
+
+  const columnColors = [
+    'from-blue-600 to-indigo-600',
+    'from-purple-600 to-pink-600',
+    'from-emerald-500 to-teal-600',
+    'from-amber-500 to-orange-600',
+    'from-rose-500 to-red-600',
+  ];
+
+  const headerColor = columnColors[index % columnColors.length];
 
   const { data: tasks } = useQuery<Task[]>({
     queryKey: ['tasks', list._id],
     queryFn: () => api.get(`/tasks/list/${list._id}`).then((r) => r.data.data),
   });
+
 
   const createTask = useMutation({
     mutationFn: (title: string) => api.post('/tasks', { listId: list._id, title, projectId }),
@@ -251,40 +315,51 @@ function KanbanList({ list, projectId, newTaskTitle, onTitleChange, onTaskClick 
 // Keep UI exactly the same, just type props and state as shown above.
 
   return (
-    <div className="flex-shrink-0 w-72 glass rounded-xl p-4">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-white text-sm">{list.name}</h3>
-        <span className="text-xs text-slate-500">{tasks?.length || 0}</span>
+    <div className="flex-shrink-0 w-80 glass rounded-[2rem] p-5 flex flex-col max-h-[calc(100vh-220px)] snap-start border-none shadow-2xl shadow-indigo-500/5 transition-all hover:translate-y-[-2px]">
+      <div className={`h-1.5 w-1/4 rounded-full bg-gradient-to-r ${headerColor} mb-6`} />
+      
+      <div className="flex items-center justify-between mb-6 px-1">
+        <h3 className="font-black text-[11px] uppercase tracking-[0.2em] opacity-80" style={{ color: 'var(--text-primary)' }}>{list.name}</h3>
+        <span className="text-[10px] font-black px-3 py-1 rounded-full glass text-indigo-600 dark:text-indigo-400 border border-slate-200 dark:border-slate-800">{tasks?.length || 0}</span>
       </div>
 
       {/* Tasks */}
-      <div className="space-y-2.5 mb-4 max-h-[60vh] overflow-y-auto">
+      <div className="space-y-3 mb-4 overflow-y-auto pr-1 custom-scrollbar">
         {tasks?.map((task: any) => (
           <div
             key={task._id}
             onClick={() => onTaskClick(task._id)}
-            className="bg-slate-800/60 rounded-lg p-3 cursor-pointer hover:bg-slate-800 border border-slate-700/50 hover:border-indigo-500/30"
-            draggable
+            className="rounded-2xl p-4 cursor-pointer transition-all border group relative overflow-hidden"
+            style={{ 
+              backgroundColor: 'var(--bg-primary)',
+              borderColor: 'var(--border-color)',
+              boxShadow: 'var(--card-shadow)'
+            }}
           >
-            <div className="flex items-start justify-between gap-2">
-              <span className="text-sm text-white font-medium">{task.title}</span>
-              <span className="text-xs">{healthIcons[task.health]}</span>
+            <div className="flex items-start justify-between gap-2 mb-2">
+              <span className="text-sm font-bold leading-tight group-hover:text-indigo-600 transition-colors" style={{ color: 'var(--text-primary)' }}>{task.title}</span>
+              <span className="text-xs grayscale group-hover:grayscale-0">{healthIcons[task.health]}</span>
             </div>
-            <div className="flex items-center gap-2 mt-2 flex-wrap">
-              <span className={`text-xs px-1.5 py-0.5 rounded ${priorityColors[task.priority]}`}>
+            
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter ${priorityColors[task.priority]}`}>
                 {task.priority}
               </span>
               {task.dueDate && (
-                <span className="text-xs text-slate-500">
+                <span className="text-[10px] font-bold" style={{ color: 'var(--text-secondary)', opacity: 0.7 }}>
                   📅 {new Date(task.dueDate).toLocaleDateString()}
                 </span>
               )}
             </div>
+
             {task.assignees?.length > 0 && (
-              <div className="flex -space-x-1.5 mt-2">
+              <div className="flex -space-x-2 mt-3">
                 {task.assignees.slice(0, 3).map((a: any) => (
-                  <div key={a._id} className="w-5 h-5 rounded-full bg-purple-600 flex items-center justify-center text-[10px] font-bold border border-slate-800">
-                    {a.name?.charAt(0)}
+                  <div 
+                    key={a._id} 
+                    className="w-6 h-6 rounded-full bg-indigo-600 flex items-center justify-center text-[10px] font-black text-white border-2 dark:border-slate-900 border-white"
+                  >
+                    {a.name?.charAt(0).toUpperCase()}
                   </div>
                 ))}
               </div>
@@ -299,14 +374,15 @@ function KanbanList({ list, projectId, newTaskTitle, onTitleChange, onTaskClick 
           e.preventDefault();
           if (newTaskTitle.trim()) createTask.mutate(newTaskTitle);
         }}
-        className="flex gap-2"
+        className="mt-auto px-1"
       >
         <input
           type="text"
           value={newTaskTitle}
           onChange={(e) => onTitleChange(e.target.value)}
-          placeholder="+ Add task"
-          className="flex-1 px-3 py-2 rounded-lg bg-slate-800/40 border border-slate-700/50 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          placeholder="+ New Task"
+          className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+          style={{ color: 'var(--text-primary)' }}
         />
       </form>
     </div>
@@ -361,101 +437,121 @@ function TaskDetailModal({ taskId, onClose }: { taskId: string; onClose: () => v
   if (!task) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-start justify-center z-50 p-4 pt-10 overflow-y-auto">
-      <div className="glass rounded-2xl p-6 w-full max-w-2xl mb-10">
+    <div className="fixed inset-0 bg-black/60 flex items-start justify-center z-[100] p-4 pt-10 overflow-y-auto backdrop-blur-sm animate-fade-in">
+      <div className="glass rounded-[2rem] p-8 w-full max-w-2xl mb-10 shadow-2xl border border-white/20 dark:border-white/10">
         {/* Header */}
-        <div className="flex items-start justify-between mb-5">
-          <h2 className="text-xl font-bold text-white">{task.title}</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-white text-lg cursor-pointer">✕</button>
+        <div className="flex items-start justify-between mb-8">
+          <div>
+            <h2 className="text-2xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>{task.title}</h2>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">Task Intelligence Hub</p>
+          </div>
+          <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-400 hover:text-slate-600 font-bold">✕</button>
         </div>
 
         {/* Status & Priority */}
-        <div className="flex gap-3 mb-5 flex-wrap">
-          <select
-            value={task.status}
-            onChange={(e) => updateTask.mutate({ status: e.target.value })}
-            className="px-3 py-1.5 rounded-lg bg-slate-800/60 border border-slate-700 text-sm text-white focus:outline-none cursor-pointer"
-          >
-            <option value="TODO">To Do</option>
-            <option value="IN_PROGRESS">In Progress</option>
-            <option value="REVIEW">Review</option>
-            <option value="COMPLETED">Completed</option>
-          </select>
-          <select
-            value={task.priority}
-            onChange={(e) => updateTask.mutate({ priority: e.target.value })}
-            className="px-3 py-1.5 rounded-lg bg-slate-800/60 border border-slate-700 text-sm text-white focus:outline-none cursor-pointer"
-          >
-            <option value="LOW">Low</option>
-            <option value="MEDIUM">Medium</option>
-            <option value="HIGH">High</option>
-            <option value="URGENT">Urgent</option>
-          </select>
-          <span className="px-3 py-1.5 rounded-lg bg-slate-800/40 text-sm text-slate-400">
-            Health: {task.health === 'HEALTHY' ? '💚 Healthy' : task.health === 'WARNING' ? '⚠️ Warning' : '🔴 At Risk'}
-          </span>
+        <div className="flex gap-4 mb-8 flex-wrap">
+          <div className="flex-1 min-w-[140px]">
+            <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Process Priority</label>
+            <select
+              value={task.priority}
+              onChange={(e) => updateTask.mutate({ priority: e.target.value })}
+              className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-xs font-bold focus:outline-none appearance-none cursor-pointer"
+              style={{ color: 'var(--text-primary)' }}
+            >
+              <option value="LOW">Low Velocity</option>
+              <option value="MEDIUM">Medium Velocity</option>
+              <option value="HIGH">High Velocity</option>
+              <option value="URGENT">Immediate Action</option>
+            </select>
+          </div>
+          <div className="flex-1 min-w-[140px]">
+            <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Task Milestone</label>
+            <select
+              value={task.status}
+              onChange={(e) => updateTask.mutate({ status: e.target.value })}
+              className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-xs font-bold focus:outline-none appearance-none cursor-pointer"
+              style={{ color: 'var(--text-primary)' }}
+            >
+              <option value="TODO">Backlog</option>
+              <option value="IN_PROGRESS">Active Build</option>
+              <option value="REVIEW">Quality Assurance</option>
+              <option value="COMPLETED">Shipped</option>
+            </select>
+          </div>
         </div>
 
         {/* Description */}
-        <div className="mb-5">
-          <label className="text-sm font-medium text-slate-400 mb-1 block">Description</label>
+        <div className="mb-8">
+          <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Brief & Context</label>
           <textarea
             defaultValue={task.description}
             onBlur={(e) => updateTask.mutate({ description: e.target.value })}
-            className="w-full px-3 py-2 rounded-lg bg-slate-800/40 border border-slate-700/50 text-sm text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 resize-none"
-            rows={3}
-            placeholder="Add a description..."
+            className="w-full px-5 py-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-sm font-medium focus:outline-none focus:ring-4 focus:ring-indigo-50 dark:focus:ring-indigo-900/10 transition-all resize-none leading-relaxed"
+            style={{ color: 'var(--text-primary)' }}
+            rows={4}
+            placeholder="No description provided yet..."
           />
         </div>
 
         {/* Decision Logs */}
-        <div className="mb-5">
-          <div className="flex items-center justify-between mb-3">
-            <h4 className="text-sm font-semibold text-white">🧠 Decision Logs</h4>
+        <div className="mb-8 p-6 rounded-3xl border border-dashed border-slate-200 dark:border-slate-700">
+          <div className="flex items-center justify-between mb-6">
+            <h4 className="text-xs font-black uppercase tracking-widest" style={{ color: 'var(--text-primary)' }}>🧠 Strategy & Decisions</h4>
             <button
               onClick={() => setShowDecision(!showDecision)}
-              className="text-xs text-indigo-400 hover:text-indigo-300 cursor-pointer"
+              className="px-3 py-1 bg-indigo-600 text-[10px] font-black text-white rounded-full uppercase tracking-tighter hover:scale-105 active:scale-95 transition-all"
             >
-              + Log Decision
+              {showDecision ? 'Close Form' : '+ New Entry'}
             </button>
           </div>
 
           {showDecision && (
-            <form onSubmit={(e) => { e.preventDefault(); logDecision.mutate(); }} className="space-y-2 mb-3 p-3 bg-slate-800/40 rounded-lg">
-              <input value={decision.problem} onChange={(e) => setDecision({ ...decision, problem: e.target.value })} placeholder="Problem" className="w-full px-3 py-2 rounded-lg bg-slate-800/60 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none" required />
-              <input value={decision.options} onChange={(e) => setDecision({ ...decision, options: e.target.value })} placeholder="Options considered" className="w-full px-3 py-2 rounded-lg bg-slate-800/60 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none" required />
-              <input value={decision.finalDecision} onChange={(e) => setDecision({ ...decision, finalDecision: e.target.value })} placeholder="Final decision" className="w-full px-3 py-2 rounded-lg bg-slate-800/60 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none" required />
-              <input value={decision.reason} onChange={(e) => setDecision({ ...decision, reason: e.target.value })} placeholder="Reason" className="w-full px-3 py-2 rounded-lg bg-slate-800/60 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none" required />
-              <button type="submit" className="px-4 py-1.5 bg-indigo-600 rounded-lg text-sm text-white cursor-pointer">Save</button>
+            <form onSubmit={(e) => { e.preventDefault(); logDecision.mutate(); }} className="space-y-3 mb-6 animate-fade-in">
+              <input value={decision.problem} onChange={(e) => setDecision({ ...decision, problem: e.target.value })} placeholder="What was the challenge?" className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold focus:outline-none" required />
+              <input value={decision.options} onChange={(e) => setDecision({ ...decision, options: e.target.value })} placeholder="Alternative paths" className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold focus:outline-none" required />
+              <div className="grid grid-cols-2 gap-3">
+                <input value={decision.finalDecision} onChange={(e) => setDecision({ ...decision, finalDecision: e.target.value })} placeholder="Final Verdict" className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold focus:outline-none" required />
+                <input value={decision.reason} onChange={(e) => setDecision({ ...decision, reason: e.target.value })} placeholder="The 'Why'" className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold focus:outline-none" required />
+              </div>
+              <button type="submit" className="w-full py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all">Authenticate Decision</button>
             </form>
           )}
 
-          {decisions?.map((d: any) => (
-            <div key={d._id} className="bg-slate-800/30 rounded-lg p-3 mb-2 border border-slate-700/30">
-              <p className="text-sm text-white font-medium">❓ {d.problem}</p>
-              <p className="text-xs text-slate-400 mt-1">Options: {d.options}</p>
-              <p className="text-xs text-green-400 mt-1">✅ Decision: {d.finalDecision}</p>
-              <p className="text-xs text-slate-500 mt-1">Reason: {d.reason}</p>
-              <p className="text-xs text-slate-600 mt-1">By {d.approvedBy?.name} • {new Date(d.createdAt).toLocaleDateString()}</p>
-            </div>
-          ))}
+          <div className="space-y-4 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+            {decisions?.map((d: any) => (
+              <div key={d._id} className="p-4 rounded-2xl bg-white/50 dark:bg-slate-800/30 border border-slate-100 dark:border-slate-800">
+                <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{d.problem}</p>
+                <div className="mt-3 space-y-1">
+                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest"><span className="text-green-500">Verdict:</span> {d.finalDecision}</p>
+                  <p className="text-[10px] text-slate-400 font-medium">Rationale: {d.reason}</p>
+                </div>
+                <div className="mt-4 flex items-center justify-between opacity-50">
+                  <span className="text-[8px] font-black uppercase tracking-widest">{d.approvedBy?.name}</span>
+                  <span className="text-[8px] font-medium">{new Date(d.createdAt).toLocaleDateString()}</span>
+                </div>
+              </div>
+            ))}
+            {(!decisions || decisions.length === 0) && !showDecision && (
+              <p className="text-center py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">No methodology recorded</p>
+            )}
+          </div>
         </div>
 
-        {/* Comments */}
-        <div>
-          <h4 className="text-sm font-semibold text-white mb-3">💬 Discussion</h4>
-          <div className="space-y-2 max-h-60 overflow-y-auto mb-3">
+        {/* Discussion Section */}
+        <div className="p-6 rounded-3xl bg-slate-50 dark:bg-slate-900/40">
+          <h4 className="text-xs font-black uppercase tracking-widest mb-6" style={{ color: 'var(--text-primary)' }}>💬 Workspace Discussion</h4>
+          <div className="space-y-6 max-h-64 overflow-y-auto mb-6 pr-2 custom-scrollbar">
             {comments?.map((c: any) => (
-              <div key={c._id} className="flex gap-3 items-start">
-                <div className="w-7 h-7 rounded-full bg-purple-600 flex items-center justify-center text-xs font-bold flex-shrink-0">
-                  {c.userId?.name?.charAt(0)}
+              <div key={c._id} className="flex gap-4 group">
+                <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-[10px] font-black text-slate-500 flex-shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                  {c.userId?.name?.charAt(0).toUpperCase()}
                 </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-white">{c.userId?.name}</span>
-                    <span className="text-xs text-slate-500">{new Date(c.createdAt).toLocaleString()}</span>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[10px] font-black" style={{ color: 'var(--text-primary)' }}>{c.userId?.name}</span>
+                    <span className="text-[8px] font-black text-slate-400 uppercase">{new Date(c.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                   </div>
-                  <p className="text-sm text-slate-300">{c.message}</p>
+                  <p className="text-xs font-medium leading-relaxed opacity-80" style={{ color: 'var(--text-primary)' }}>{c.message}</p>
                 </div>
               </div>
             ))}
@@ -466,10 +562,11 @@ function TaskDetailModal({ taskId, onClose }: { taskId: string; onClose: () => v
               type="text"
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
-              placeholder="Write a comment..."
-              className="flex-1 px-3 py-2 rounded-lg bg-slate-800/40 border border-slate-700/50 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              placeholder="Deploy a thought..."
+              className="flex-1 px-4 py-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold focus:outline-none focus:ring-4 focus:ring-indigo-50 dark:focus:ring-indigo-900/10 transition-all"
+              style={{ color: 'var(--text-primary)' }}
             />
-            <button type="submit" className="px-4 py-2 bg-indigo-600 rounded-lg text-sm text-white cursor-pointer">Send</button>
+            <button type="submit" className="px-6 py-3 bg-indigo-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all">Send</button>
           </form>
         </div>
       </div>
@@ -479,101 +576,78 @@ function TaskDetailModal({ taskId, onClose }: { taskId: string; onClose: () => v
 
 // ========== ANALYTICS PANEL ==========
 function AnalyticsPanel({ projectId }: { projectId: string }) {
-  const { data: workload } = useQuery({
-    queryKey: ['workload', projectId],
-    queryFn: () => api.get(`/analytics/${projectId}/workload`).then((r) => r.data.data),
-  });
-
-  const { data: silentMembers } = useQuery({
-    queryKey: ['silent', projectId],
-    queryFn: () => api.get(`/analytics/${projectId}/silent-members`).then((r) => r.data.data),
-  });
-
   const { data: health } = useQuery({
     queryKey: ['health', projectId],
     queryFn: () => api.get(`/analytics/${projectId}/health`).then((r) => r.data.data),
   });
 
+  const { data: workload } = useQuery({
+    queryKey: ['workload', projectId],
+    queryFn: () => api.get(`/analytics/${projectId}/workload`).then((r) => r.data.data),
+  });
+
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* Project Health */}
-      {health && (
-        <div className="glass rounded-xl p-6">
-          <h3 className="text-lg font-semibold text-white mb-4">📊 Project Health</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-slate-800/40 rounded-lg p-4 text-center">
-              <p className="text-2xl font-bold text-white">{health.totalTasks}</p>
-              <p className="text-xs text-slate-400">Total Tasks</p>
-            </div>
-            <div className="bg-slate-800/40 rounded-lg p-4 text-center">
-              <p className="text-2xl font-bold text-green-400">{health.completionRate}%</p>
-              <p className="text-xs text-slate-400">Completed</p>
-            </div>
-            <div className="bg-slate-800/40 rounded-lg p-4 text-center">
-              <p className="text-2xl font-bold text-yellow-400">{health.health?.WARNING || 0}</p>
-              <p className="text-xs text-slate-400">⚠️ Warnings</p>
-            </div>
-            <div className="bg-slate-800/40 rounded-lg p-4 text-center">
-              <p className="text-2xl font-bold text-red-400">{health.health?.AT_RISK || 0}</p>
-              <p className="text-xs text-slate-400">🔴 At Risk</p>
-            </div>
+    <div className="animate-fade-in p-6 lg:p-10 max-w-5xl mx-auto space-y-8">
+      {/* Project Health Radar */}
+      <div className="p-8 rounded-[2rem] glass border border-slate-200 dark:border-slate-800 relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-8 opacity-10">
+          <div className="w-32 h-32 rounded-full border-[10px] border-indigo-600"></div>
+        </div>
+        
+        <h3 className="text-sm font-black uppercase tracking-[0.2em] mb-8" style={{ color: 'var(--text-primary)' }}>Radar Metrics</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="space-y-1">
+            <p className="text-3xl font-black tracking-tighter" style={{ color: 'var(--text-primary)' }}>{health?.totalTasks || 0}</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Total Ops</p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-3xl font-black tracking-tighter text-indigo-600">{health?.completionRate || 0}%</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Efficiency</p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-3xl font-black tracking-tighter text-yellow-500">{health?.health?.WARNING || 0}</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Alerts</p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-3xl font-black tracking-tighter text-red-500">{health?.health?.AT_RISK || 0}</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Critical</p>
           </div>
         </div>
-      )}
+      </div>
 
-      {/* Workload Distribution */}
-      {workload && (
-        <div className="glass rounded-xl p-6">
-          <h3 className="text-lg font-semibold text-white mb-4">👥 Workload Distribution</h3>
-          <div className="space-y-3">
-            {workload.map((w: any) => (
-              <div key={w.user.id} className="flex items-center gap-4">
-                <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-bold flex-shrink-0">
-                  {w.user.name?.charAt(0)}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Workload */}
+        <div className="p-8 rounded-[2rem] bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+          <h3 className="text-xs font-black uppercase tracking-widest mb-8" style={{ color: 'var(--text-primary)' }}>Team Utilization</h3>
+          <div className="space-y-6">
+            {workload?.map((w: any) => (
+              <div key={w.user.id} className="space-y-2">
+                <div className="flex justify-between items-center text-[10px] font-black uppercase">
+                  <span style={{ color: 'var(--text-primary)' }}>{w.user.name}</span>
+                  <span className="text-indigo-600">{w.total} active</span>
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm text-white">{w.user.name}</span>
-                    <span className="text-xs text-slate-400">{w.total} tasks</span>
-                  </div>
-                  <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full ${w.total > 8 ? 'bg-red-500' : w.total > 5 ? 'bg-yellow-500' : 'bg-green-500'}`}
-                      style={{ width: `${Math.min((w.total / 12) * 100, 100)}%` }}
-                    />
-                  </div>
+                <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-indigo-600 rounded-full transition-all duration-1000"
+                    style={{ width: `${Math.min((w.total / 10) * 100, 100)}%` }}
+                  ></div>
                 </div>
               </div>
             ))}
           </div>
         </div>
-      )}
 
-      {/* Silent Members */}
-      {silentMembers && (
-        <div className="glass rounded-xl p-6">
-          <h3 className="text-lg font-semibold text-white mb-4">🔇 Team Activity</h3>
-          <div className="space-y-2">
-            {silentMembers.map((m: any) => (
-              <div key={m.user.id} className="flex items-center justify-between bg-slate-800/40 rounded-lg p-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-7 h-7 rounded-full bg-purple-600 flex items-center justify-center text-xs font-bold">
-                    {m.user.name?.charAt(0)}
-                  </div>
-                  <span className="text-sm text-white">{m.user.name}</span>
-                </div>
-                <span className={`text-xs px-2 py-1 rounded-lg ${
-                  m.status === 'ACTIVE' ? 'bg-green-500/20 text-green-400' :
-                  m.status === 'LOW' ? 'bg-yellow-500/20 text-yellow-400' :
-                  'bg-red-500/20 text-red-400'
-                }`}>
-                  {m.status === 'ACTIVE' ? '✅ Active' : m.status === 'LOW' ? '⚠️ Low' : '🔴 Inactive'}
-                </span>
-              </div>
-            ))}
+        {/* Quick Action */}
+        <div className="p-8 rounded-[2rem] bg-indigo-600 text-white flex flex-col justify-between">
+          <div>
+            <h3 className="text-xs font-black uppercase tracking-widest mb-2 opacity-60">Operations</h3>
+            <p className="text-xl font-bold leading-tight">Generate a real-time status report of current blockers.</p>
           </div>
+          <button className="mt-8 px-6 py-3 bg-white text-indigo-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-indigo-900/20">
+            Export Analytics
+          </button>
         </div>
-      )}
+      </div>
     </div>
   );
 }
@@ -581,14 +655,14 @@ function AnalyticsPanel({ projectId }: { projectId: string }) {
 // ========== DEPENDENCIES PANEL ==========
 function DependenciesPanel({ projectId }: { projectId: string }) {
   return (
-    <div className="glass rounded-xl p-6 max-w-4xl mx-auto">
-      <h3 className="text-lg font-semibold text-white mb-4">🔗 Task Dependency Graph</h3>
-      <p className="text-sm text-slate-400 mb-4">
-        View task dependencies to identify blockers. Open any task to add dependencies.
+    <div className="animate-fade-in py-20 text-center max-w-md mx-auto">
+      <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-[2rem] flex items-center justify-center mx-auto mb-8 text-3xl">🔗</div>
+      <h3 className="text-xl font-black mb-4" style={{ color: 'var(--text-primary)' }}>Dependency Neural Network</h3>
+      <p className="text-sm font-medium opacity-60 leading-relaxed" style={{ color: 'var(--text-primary)' }}>
+        Our automated logic engine is currently mapping your project dependencies. This visualization helps identify critical path blockers.
       </p>
-      <div className="bg-slate-800/40 rounded-lg p-8 text-center text-slate-500">
-        <p>Task dependency graph visualization will render here using React Flow.</p>
-        <p className="text-xs mt-2">Add dependencies to tasks first from the task detail modal.</p>
+      <div className="mt-12 p-10 border border-dashed border-slate-200 dark:border-slate-800 rounded-[2.5rem]">
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Logic Engine Status: Standby</p>
       </div>
     </div>
   );
@@ -605,44 +679,53 @@ function MeetingNotesPanel() {
   });
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <div className="glass rounded-xl p-6">
-        <h3 className="text-lg font-semibold text-white mb-4">📝 Meeting Notes → Tasks</h3>
-        <p className="text-sm text-slate-400 mb-4">
-          Paste your meeting notes below and we&apos;ll extract actionable tasks automatically.
-        </p>
+    <div className="animate-fade-in p-6 lg:p-10 max-w-4xl mx-auto space-y-8">
+      <div className="p-10 rounded-[3rem] glass border border-slate-100 dark:border-slate-800">
+        <div className="mb-10">
+          <h3 className="text-2xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>Meeting Intelligence</h3>
+          <p className="text-sm font-medium opacity-60 mt-1" style={{ color: 'var(--text-primary)' }}>Transform verbal discussions into actionable project tasking.</p>
+        </div>
+        
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          className="w-full px-4 py-3 rounded-xl bg-slate-800/60 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
-          rows={6}
-          placeholder={`Example:\nSam will design the landing page by Friday\nRahul will set up the API endpoints\nWe need to research authentication`}
+          className="w-full px-6 py-6 rounded-[2rem] bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-sm font-medium focus:outline-none focus:ring-4 focus:ring-indigo-50 dark:focus:ring-indigo-900/10 transition-all resize-none mb-6 leading-relaxed"
+          style={{ color: 'var(--text-primary)' }}
+          rows={8}
+          placeholder="Paste meeting transcript or highlights here. Mention teammates and dates for better extraction..."
         />
+        
         <button
           onClick={() => extractMutation.mutate()}
           disabled={extractMutation.isPending || !notes.trim()}
-          className="mt-3 px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl font-semibold text-white disabled:opacity-50 cursor-pointer"
+          className="w-full sm:w-auto px-10 py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
         >
-          {extractMutation.isPending ? 'Extracting...' : '🔍 Extract Tasks'}
+          {extractMutation.isPending ? 'Processing Logic...' : 'Analyze & Extract'}
         </button>
       </div>
 
       {extractedTasks.length > 0 && (
-        <div className="glass rounded-xl p-6">
-          <h3 className="text-lg font-semibold text-white mb-4">Extracted Tasks ({extractedTasks.length})</h3>
-          <div className="space-y-2">
+        <div className="p-8 rounded-[2.5rem] bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-900/50">
+          <h4 className="text-[10px] font-black uppercase tracking-widest text-indigo-600 mb-6">Extracted Intelligence ({extractedTasks.length})</h4>
+          <div className="grid gap-4">
             {extractedTasks.map((t, i) => (
-              <div key={i} className="bg-slate-800/40 rounded-lg p-3 flex items-center justify-between">
-                <div>
-                  <span className="text-sm text-white">✅ {t.title}</span>
-                  {t.assigneeName && (
-                    <span className="text-xs text-indigo-400 ml-2">→ {t.assigneeName}</span>
-                  )}
+              <div key={i} className="p-5 rounded-[1.5rem] bg-white dark:bg-slate-900 border border-indigo-50 dark:border-indigo-900/30 flex items-center justify-between group">
+                <div className="flex items-center gap-4">
+                  <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-black">
+                    {i + 1}
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>{t.title}</p>
+                    {t.assigneeName && (
+                      <p className="text-[10px] font-black text-indigo-500 uppercase mt-0.5">Assigned to: {t.assigneeName}</p>
+                    )}
+                  </div>
                 </div>
-                {t.dueDate && <span className="text-xs text-slate-500">📅 {t.dueDate}</span>}
+                {t.dueDate && <span className="text-[10px] font-black opacity-40 uppercase tracking-tighter">Due {t.dueDate}</span>}
               </div>
             ))}
           </div>
+          <button className="w-full mt-6 py-3 bg-indigo-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all">Import to Board</button>
         </div>
       )}
     </div>

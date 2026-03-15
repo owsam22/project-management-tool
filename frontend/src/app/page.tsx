@@ -4,50 +4,67 @@ import Link from 'next/link';
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-950 via-slate-900 to-gray-950 p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center p-6 lg:p-10 relative overflow-hidden">
+      {/* Premium Background Elements */}
+      <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-500/10 blur-[120px] rounded-full" />
+      <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-500/10 blur-[120px] rounded-full" />
+
       {/* Hero */}
-      <div className="text-center max-w-2xl">
-        <h1 className="text-5xl md:text-6xl font-extrabold gradient-text mb-6 leading-tight">
-          Smart Collaborative<br />Project Manager
+      <div className="text-center max-w-3xl animate-fade-in relative z-10">
+        <div className="inline-block px-4 py-1.5 mb-6 rounded-full bg-indigo-600/10 border border-indigo-600/20">
+          <span className="text-[10px] font-black tracking-[0.2em] text-indigo-600 uppercase">Evolutionary Workspace v2.0</span>
+        </div>
+        <h1 className="text-[clamp(2.5rem,12vw,4.5rem)] font-black mb-8 leading-[0.9] tracking-tighter" style={{ color: 'var(--text-primary)' }}>
+          Collaborate at <br />
+          <span className="gradient-text">Sync Velocity.</span>
         </h1>
-        <p className="text-lg text-slate-400 mb-10 leading-relaxed">
-          Manage tasks on Kanban boards, track decisions, visualize dependencies, 
-          monitor workload — all in real-time with your team.
+        <p className="text-lg md:text-xl font-medium mb-12 leading-relaxed max-w-2xl mx-auto" style={{ color: 'var(--text-secondary)' }}>
+          The intelligent project hub designed for modern teams. Kanban intelligence, 
+          decision neural logs, and real-time team synchronization.
         </p>
 
-        <div className="flex gap-4 justify-center">
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link
             href="/signup"
-            className="px-8 py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-xl font-semibold text-white"
+            className="px-10 py-4 bg-indigo-600 hover:bg-indigo-700 rounded-2xl font-black text-white text-xs uppercase tracking-widest shadow-2xl shadow-indigo-600/30 transition-all hover:scale-105 active:scale-95 translate-y-0"
           >
-            Get Started
+            Initialize Workspace
           </Link>
           <Link
             href="/login"
-            className="px-8 py-3.5 border border-slate-700 hover:border-indigo-500 rounded-xl font-semibold text-slate-300 hover:text-white"
+            className="px-10 py-4 border-2 border-slate-200 dark:border-slate-800 hover:border-indigo-600 rounded-2xl font-black text-xs uppercase tracking-widest transition-all hover:bg-slate-50 dark:hover:bg-slate-900"
+            style={{ color: 'var(--text-primary)' }}
           >
-            Sign In
+            Secure Log In
           </Link>
         </div>
       </div>
 
       {/* Features grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-20 max-w-4xl w-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-32 max-w-6xl w-full relative z-10">
         {[
-          { icon: '📋', title: 'Kanban Boards', desc: 'Drag and drop tasks across customizable columns' },
-          { icon: '🧠', title: 'Decision Logs', desc: 'Track why every important decision was made' },
-          { icon: '🔗', title: 'Dependency Graphs', desc: 'Visualize task relationships and blockers' },
-          { icon: '⚡', title: 'Real-Time', desc: 'Changes appear instantly for all team members' },
-          { icon: '📊', title: 'Workload Analytics', desc: 'Balance work and detect silent members' },
-          { icon: '📝', title: 'Meeting → Tasks', desc: 'Paste notes, get tasks extracted automatically' },
+          { icon: '📋', title: 'Kanban Boards', desc: 'Drag and drop tasks across customizable columns with real-time feedback.' },
+          { icon: '🧠', title: 'Decision Logs', desc: 'Immutable records of project evolution and strategic methodology.' },
+          { icon: '🔗', title: 'Dependency Graphs', desc: 'Neural mapping of task relationships and potential critical blockers.' },
+          { icon: '⚡', title: 'Real-Time Sync', desc: 'Sub-millisecond synchronization across your entire distributed team.' },
+          { icon: '📊', title: 'Workload Analytics', desc: 'Advanced monitoring of team balance and individual utilization.' },
+          { icon: '📝', title: 'Meeting Extraction', desc: 'AI-assisted transformation of verbal notes into actionable tasks.' },
         ].map((f, i) => (
-          <div key={i} className="glass rounded-xl p-6 card-glow">
-            <div className="text-3xl mb-3">{f.icon}</div>
-            <h3 className="font-semibold text-white mb-1">{f.title}</h3>
-            <p className="text-sm text-slate-400">{f.desc}</p>
+          <div key={i} className="glass rounded-[2.5rem] p-10 card-glow group">
+            <div className="w-14 h-14 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 flex items-center justify-center text-3xl mb-8 group-hover:scale-110 group-hover:bg-indigo-600 transition-all duration-500 group-hover:text-white shadow-sm">
+              {f.icon}
+            </div>
+            <h3 className="text-xl font-black mb-3 tracking-tight" style={{ color: 'var(--text-primary)' }}>{f.title}</h3>
+            <p className="text-sm font-medium leading-relaxed opacity-60" style={{ color: 'var(--text-primary)' }}>{f.desc}</p>
           </div>
         ))}
       </div>
+
+      {/* Footer Branded Removal */}
+      <footer className="mt-32 pb-32 lg:pb-12 flex flex-col items-center opacity-40">
+        <div className="w-10 h-1 border-t border-slate-300 dark:border-slate-700 mb-8" />
+        <p className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: 'var(--text-primary)' }}>© Syncra Intelligence System</p>
+      </footer>
     </div>
   );
 }

@@ -13,6 +13,7 @@ import decisionRoutes from './routes/decision.routes.js';
 import notificationRoutes from './routes/notification.routes.js';
 import analyticsRoutes from './routes/analytics.routes.js';
 import nlpRoutes from './routes/nlp.routes.js';
+import chatRoutes from './routes/chat.routes.js';
 
 // Middleware imports
 import { errorHandler } from './middlewares/errorHandler.js';
@@ -41,6 +42,7 @@ app.use('/api/v1/decisions', decisionRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1/analytics', analyticsRoutes);
 app.use('/api/v1/nlp', nlpRoutes);
+app.use('/api/v1/chat', chatRoutes);
 
 // Error handler
 app.use(errorHandler);
