@@ -3,7 +3,7 @@ import "./globals.css";
 import Providers from "./providers";
 
 export const metadata: Metadata = {
-  title: "SCPM | Smart Collaborative Project Manager",
+  title: "Velo | Smart Collaborative Project Manager",
   description: "Intelligent project management for modern teams — Kanban, decisions tracking, dependency graphs, and real-time collaboration.",
 };
 

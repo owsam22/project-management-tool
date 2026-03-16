@@ -63,7 +63,7 @@ export default function HomePage() {
       {/* Footer Branded Removal */}
       <footer className="mt-32 pb-32 lg:pb-12 flex flex-col items-center opacity-40">
         <div className="w-10 h-1 border-t border-slate-300 dark:border-slate-700 mb-8" />
-        <p className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: 'var(--text-primary)' }}>© Syncra Intelligence System</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: 'var(--text-primary)' }}>© Velo Intelligence System</p>
       </footer>
     </div>
   );

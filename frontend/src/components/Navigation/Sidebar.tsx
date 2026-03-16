@@ -60,9 +60,9 @@ export default function Sidebar() {
           {!isCollapsed && (
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-[1.25rem] bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center shadow-xl shadow-indigo-600/30 rotate-3">
-                <span className="text-white font-black text-2xl -rotate-3">S</span>
+                <span className="text-white font-black text-2xl -rotate-3">V</span>
               </div>
-              <h1 className="text-2xl font-black tracking-tighter bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Syncra</h1>
+              <h1 className="text-2xl font-black tracking-tighter bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Velo</h1>
             </div>
           )}
           <button 
