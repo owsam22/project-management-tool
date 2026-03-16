@@ -40,6 +40,10 @@ export default function Sidebar() {
           {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
           <span className="text-[10px] font-black uppercase tracking-tighter">Theme</span>
         </button>
+        <button onClick={logout} className="flex flex-col items-center gap-1 p-2 text-red-500/80">
+          <LogOut size={20} />
+          <span className="text-[10px] font-black uppercase tracking-tighter">Exit</span>
+        </button>
       </nav>
 
       {/* Desktop Sidebar */}
