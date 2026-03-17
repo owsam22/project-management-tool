@@ -13,9 +13,10 @@ import { arrayMove, SortableContext, sortableKeyboardCoordinates, horizontalList
 import { CSS } from '@dnd-kit/utilities';
 
 // ========== TYPES ==========
-type User = { id: string; name: string };
-type Member = { _id: string; userId: User };
-type Project = { _id: string; name: string; members: Member[] };
+type User = { _id: string; name: string };
+type Project = { _id: string; name: string };
+type Member = { _id: string; userId: { _id: string; name: string; email: string; avatarUrl?: string }; role: string };
+type ProjectData = { project: Project; members: Member[]; currentUserRole: string };
 type Board = { _id: string; name: string };
 type List = { _id: string; name: string };
 type Task = {
@@ -42,7 +43,7 @@ export default function ProjectPage() {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('MEMBER');
   const [showInvite, setShowInvite] = useState(false);
-  const [activeTab, setActiveTab] = useState<'board' | 'analytics' | 'dependencies' | 'meetings'>('board');
+  const [activeTab, setActiveTab] = useState<'board' | 'analytics' | 'dependencies' | 'meetings' | 'team'>('board');
 
   useEffect(() => {
     if (!isAuthenticated) router.push('/login');
@@ -68,7 +69,7 @@ export default function ProjectPage() {
     };
   }, [projectId, user, queryClient]);
 
-  const { data: projectData } = useQuery<{ project: Project }>({
+  const { data: projectData } = useQuery<ProjectData>({
     queryKey: ['project', projectId],
     queryFn: () => api.get(`/projects/${projectId}`).then((r) => r.data.data),
     enabled: isAuthenticated && !!projectId,
@@ -86,6 +87,13 @@ export default function ProjectPage() {
       queryClient.invalidateQueries({ queryKey: ['project', projectId] });
       setShowInvite(false);
       setInviteEmail('');
+    },
+  });
+
+  const removeMemberMutation = useMutation({
+    mutationFn: (userId: string) => api.delete(`/projects/${projectId}/members/${userId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['project', projectId] });
     },
   });
 
@@ -115,13 +123,17 @@ export default function ProjectPage() {
 
         <div className="flex items-center gap-4">
           <div className="flex -space-x-2 mr-2">
-            {projectData?.project?.members?.slice(0, 5).map((m: Member) => (
+            {projectData?.members?.slice(0, 5).map((m: Member) => (
               <div 
                 key={m._id} 
                 className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-[10px] font-black text-white border-2 dark:border-slate-900 border-white shadow-sm" 
                 title={m.userId?.name}
               >
-                {m.userId?.name?.charAt(0).toUpperCase()}
+                {m.userId?.avatarUrl ? (
+                  <img src={m.userId.avatarUrl} alt={m.userId.name} className="w-full h-full rounded-full object-cover" />
+                ) : (
+                  m.userId?.name?.charAt(0).toUpperCase()
+                )}
               </div>
             ))}
           </div>
@@ -140,7 +152,7 @@ export default function ProjectPage() {
         style={{ borderColor: 'var(--border-color)' }}
       >
         <div className="flex px-4">
-          {(['board', 'analytics', 'dependencies', 'meetings'] as const).map((tab) => (
+          {(['board', 'analytics', 'team', 'dependencies', 'meetings'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -153,10 +165,11 @@ export default function ProjectPage() {
               <div className="flex items-center gap-2">
                 {tab === 'board' && <Layout size={14} />}
                 {tab === 'analytics' && <BarChart3 size={14} />}
+                {tab === 'team' && <Users size={14} />}
                 {tab === 'dependencies' && <Link2 size={14} />}
                 {tab === 'meetings' && <FileText size={14} />}
                 <span className={activeTab === tab ? 'scale-110 inline-block transition-transform' : ''}>
-                  {tab === 'dependencies' ? 'Links' : tab === 'meetings' ? 'Notes' : tab === 'analytics' ? 'Stats' : 'Board'}
+                  {tab === 'dependencies' ? 'Links' : tab === 'meetings' ? 'Notes' : tab === 'analytics' ? 'Stats' : tab === 'team' ? 'Team' : 'Board'}
                 </span>
               </div>
             </button>
@@ -171,6 +184,15 @@ export default function ProjectPage() {
             <KanbanBoard boardId={boards[0]._id} projectId={projectId as string} />
           )}
           {activeTab === 'analytics' && <AnalyticsPanel projectId={projectId as string} />}
+          {activeTab === 'team' && projectData && (
+            <TeamPanel 
+              members={projectData.members} 
+              currentUserRole={projectData.currentUserRole}
+              currentUserId={user?.id}
+              onRemove={(userId) => removeMemberMutation.mutate(userId)}
+              onInvite={() => setShowInvite(true)}
+            />
+          )}
           {activeTab === 'dependencies' && <DependenciesPanel projectId={projectId as string} />}
           {activeTab === 'meetings' && <MeetingNotesPanel />}
         </div>
@@ -838,6 +860,95 @@ function MeetingNotesPanel() {
           <button className="w-full mt-6 py-3 bg-indigo-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all">Import to Board</button>
         </div>
       )}
+    </div>
+  );
+}
+
+// ========== TEAM PANEL ==========
+function TeamPanel({ 
+  members, 
+  currentUserRole, 
+  currentUserId,
+  onRemove, 
+  onInvite 
+}: { 
+  members: Member[]; 
+  currentUserRole: string;
+  currentUserId?: string;
+  onRemove: (userId: string) => void;
+  onInvite: () => void;
+}) {
+  const isAuthorized = ['OWNER', 'ADMIN'].includes(currentUserRole);
+
+  return (
+    <div className="animate-fade-in p-6 lg:p-10 max-w-5xl mx-auto space-y-8">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h3 className="text-2xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>Team Synergy</h3>
+          <p className="text-sm font-medium opacity-60 mt-1" style={{ color: 'var(--text-primary)' }}>Active collaborators synchronized on this project node.</p>
+        </div>
+        <div className="flex items-center gap-3">
+          {isAuthorized && (
+            <button
+              onClick={onInvite}
+              className="px-4 py-2 bg-indigo-600 text-white font-bold rounded-xl text-xs hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 dark:shadow-none cursor-pointer flex items-center gap-2"
+            >
+              <Plus size={14} />
+              Invite Member
+            </button>
+          )}
+          <div className="px-4 py-2 glass rounded-2xl border border-slate-200 dark:border-slate-800">
+            <span className="text-xs font-black text-indigo-600">{members.length} Members</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {members.map((member) => (
+          <div 
+            key={member._id}
+            className="glass rounded-3xl p-6 border border-slate-200 dark:border-slate-800 hover:border-indigo-500/50 transition-all group relative"
+          >
+            {isAuthorized && member.role !== 'OWNER' && member.userId?._id !== currentUserId && (
+              <button
+                onClick={() => onRemove(member.userId._id)}
+                className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-lg transition-all cursor-pointer"
+                title="Remove Member"
+              >
+                <Plus size={14} className="rotate-45" />
+              </button>
+            )}
+
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-14 h-14 rounded-2xl bg-indigo-600 flex items-center justify-center text-xl font-black text-white shadow-lg shadow-indigo-200 dark:shadow-none transition-transform group-hover:scale-110">
+                {member.userId?.avatarUrl ? (
+                  <img src={member.userId.avatarUrl} alt={member.userId.name} className="w-full h-full rounded-2xl object-cover" />
+                ) : (
+                  member.userId?.name?.charAt(0).toUpperCase()
+                )}
+              </div>
+              <div>
+                <h4 className="font-bold text-lg" style={{ color: 'var(--text-primary)' }}>{member.userId?.name}</h4>
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{member.role}</p>
+              </div>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 text-xs font-medium text-slate-500">
+                <Send size={14} className="opacity-50" />
+                <span className="truncate">{member.userId?.email}</span>
+              </div>
+              <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Status</span>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                  <span className="text-[10px] font-black uppercase text-emerald-500">Online</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

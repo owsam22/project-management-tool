@@ -48,3 +48,13 @@ export const leave = async (req, res, next) => {
     next(error);
   }
 };
+
+export const removeMember = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    await projectService.removeMember(req.params.projectId, req.user.userId, userId);
+    res.status(200).json({ status: 'success', message: 'Member removed' });
+  } catch (error) {
+    next(error);
+  }
+};

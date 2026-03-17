@@ -9,6 +9,15 @@ export const getNotifications = async (req, res, next) => {
   }
 };
 
+export const getUnreadCount = async (req, res, next) => {
+  try {
+    const count = await notifService.getUnreadCount(req.user.userId);
+    res.status(200).json({ status: 'success', data: { count } });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const markAsRead = async (req, res, next) => {
   try {
     const notification = await notifService.markAsRead(req.params.notificationId, req.user.userId);
@@ -22,6 +31,17 @@ export const markAllAsRead = async (req, res, next) => {
   try {
     await notifService.markAllAsRead(req.user.userId);
     res.status(200).json({ status: 'success', message: 'All notifications marked as read' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const respondToInvite = async (req, res, next) => {
+  try {
+    const { action } = req.body; // 'accept' or 'decline'
+    if (!action) throw { statusCode: 400, message: 'Action (accept/decline) is required' };
+    const result = await notifService.respondToInvite(req.params.notificationId, req.user.userId, action);
+    res.status(200).json({ status: 'success', data: result });
   } catch (error) {
     next(error);
   }

@@ -9,7 +9,16 @@ const notificationSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ['TASK_ASSIGNED', 'TASK_UPDATED', 'COMMENT_MENTION', 'PROJECT_INVITE', 'DEADLINE_REMINDER'],
+      enum: [
+        'TASK_ASSIGNED',
+        'TASK_UPDATED',
+        'COMMENT_MENTION',
+        'PROJECT_INVITE',
+        'DEADLINE_REMINDER',
+        'MEMBER_JOINED',
+        'MEMBER_REMOVED',
+        'TEAM_UPDATE',
+      ],
       required: true,
     },
     message: {
@@ -27,6 +36,16 @@ const notificationSchema = new mongoose.Schema(
     read: {
       type: Boolean,
       default: false,
+    },
+    // For actionable notifications (e.g. invite accept/decline)
+    status: {
+      type: String,
+      enum: ['PENDING', 'ACCEPTED', 'DECLINED', null],
+      default: null,
+    },
+    actionData: {
+      type: mongoose.Schema.Types.Mixed,
+      default: null,
     },
   },
   { timestamps: true }

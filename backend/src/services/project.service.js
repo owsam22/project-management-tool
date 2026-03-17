@@ -73,3 +73,21 @@ export const leaveProject = async (projectId, userId) => {
   }
   await ProjectMember.deleteOne({ projectId, userId });
 };
+
+export const removeMember = async (projectId, adminId, userIdToRemove) => {
+  const adminMembership = await ProjectMember.findOne({ projectId, userId: adminId });
+  if (!adminMembership || !['OWNER', 'ADMIN'].includes(adminMembership.role)) {
+    throw { statusCode: 403, message: 'Insufficient privileges to remove members' };
+  }
+
+  const memberToRemove = await ProjectMember.findOne({ projectId, userId: userIdToRemove });
+  if (!memberToRemove) {
+    throw { statusCode: 404, message: 'Member not found in this project' };
+  }
+
+  if (memberToRemove.role === 'OWNER') {
+    throw { statusCode: 400, message: 'Cannot remove the project owner' };
+  }
+
+  await ProjectMember.deleteOne({ projectId, userId: userIdToRemove });
+};
