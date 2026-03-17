@@ -74,7 +74,7 @@ export default function Sidebar() {
           </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-6 space-y-2 pt-6">
+        <nav className="flex-1 px-4 space-y-1.5 pt-4">
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
@@ -82,16 +82,16 @@ export default function Sidebar() {
               <Link 
                 key={item.name} 
                 href={item.href}
-                className={`flex items-center gap-5 px-5 py-4 rounded-[1.5rem] transition-all duration-300 relative group ${
+                className={`flex items-center gap-4 px-5 py-3.5 rounded-2xl transition-all duration-300 relative group ${
                   isActive 
-                    ? 'bg-indigo-600 text-white shadow-2xl shadow-indigo-600/30' 
-                    : 'text-slate-500 hover:bg-white dark:hover:bg-slate-900 hover:text-indigo-600 border border-transparent hover:border-slate-200 dark:hover:border-slate-800'
+                    ? 'bg-indigo-600/10 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400' 
+                    : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-900/50 hover:text-indigo-600 dark:hover:text-indigo-400'
                 }`}
               >
-                <Icon size={22} className={`${isActive ? 'text-white' : 'group-hover:scale-110 transition-transform'}`} strokeWidth={isActive ? 2.5 : 2} />
+                <Icon size={20} className={`${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'group-hover:scale-110 transition-transform'}`} strokeWidth={isActive ? 2.5 : 2} />
                 {!isCollapsed && <span className="font-bold text-sm tracking-tight">{item.name}</span>}
-                {!isCollapsed && isActive && (
-                   <span className="ml-auto w-2 h-2 rounded-full bg-white opacity-50" />
+                {isActive && (
+                   <div className="absolute left-0 w-1 h-6 bg-indigo-600 dark:bg-indigo-400 rounded-r-full" />
                 )}
               </Link>
             );
@@ -99,28 +99,28 @@ export default function Sidebar() {
         </nav>
 
         {/* Action Footer */}
-        <div className="p-8 space-y-4">
+        <div className="p-6 space-y-3">
           {/* Theme Toggle */}
           <button 
             onClick={toggleTheme}
-            className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-slate-500 hover:bg-white dark:hover:bg-slate-900 transition-all font-bold text-xs uppercase tracking-widest border border-slate-200 dark:border-slate-800 shadow-sm"
+            className="w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-all font-bold text-[10px] uppercase tracking-[0.2em] border border-transparent hover:border-slate-200 dark:hover:border-slate-800"
           >
             {theme === 'light' ? <Moon size={18} className="text-indigo-600" /> : <Sun size={18} className="text-amber-400" />}
-            {!isCollapsed && <span>{theme === 'light' ? 'NIGHT MODE' : 'DAY MODE'}</span>}
+            {!isCollapsed && <span>{theme === 'light' ? 'Night Mode' : 'Day Mode'}</span>}
           </button>
 
-          {/* Profile Card */}
-          <div className={`p-5 rounded-[2rem] bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/30 transition-all ${isCollapsed ? 'px-3' : ''}`}>
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-white font-black text-lg flex-shrink-0 shadow-xl shadow-indigo-600/30">
+          {/* Profile Card Refined */}
+          <div className={`p-4 rounded-3xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800/50 transition-all ${isCollapsed ? 'px-2' : ''}`}>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white font-black text-base flex-shrink-0 shadow-lg shadow-indigo-600/20">
                 {user?.name?.charAt(0).toUpperCase() || 'U'}
               </div>
               {!isCollapsed && (
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-black truncate tracking-tight uppercase" style={{ color: 'var(--text-primary)' }}>{user?.name}</p>
+                  <p className="text-xs font-black truncate tracking-tight" style={{ color: 'var(--text-primary)' }}>{user?.name}</p>
                   <button 
                     onClick={logout}
-                    className="text-[10px] font-black text-red-500 hover:text-red-600 flex items-center gap-1 mt-1 transition-colors uppercase tracking-widest"
+                    className="text-[9px] font-black text-rose-500 hover:text-rose-600 flex items-center gap-1 mt-0.5 transition-colors uppercase tracking-widest"
                   >
                      Sign Out <LogOut size={10} />
                   </button>

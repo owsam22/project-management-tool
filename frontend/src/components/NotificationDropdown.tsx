@@ -98,7 +98,7 @@ export default function NotificationDropdown() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-4 w-[calc(100vw-2rem)] sm:w-96 glass rounded-[2rem] shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden z-[100] animate-in fade-in slide-in-from-top-4 duration-300">
+        <div className="fixed sm:absolute top-20 sm:top-auto left-4 right-4 sm:left-auto sm:right-0 sm:mt-4 sm:w-96 glass rounded-[2.5rem] shadow-2xl border border-slate-200/50 dark:border-slate-800/50 overflow-hidden z-[100] animate-in fade-in slide-in-from-top-4 duration-300 max-h-[80vh] flex flex-col">
           <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-white/50 dark:bg-slate-950/50 backdrop-blur-xl">
             <h3 className="font-black text-[10px] uppercase tracking-widest text-slate-400">Activity Hub</h3>
             <button
@@ -123,27 +123,27 @@ export default function NotificationDropdown() {
                     className={`p-5 transition-all group ${!n.read ? 'bg-indigo-50/30 dark:bg-indigo-900/5' : 'hover:bg-slate-50/50 dark:hover:bg-slate-900/50'}`}
                     onClick={() => !n.read && n.type !== 'PROJECT_INVITE' && markReadMutation.mutate(n._id)}
                   >
-                    <div className="flex gap-4">
+                    <div className="flex gap-3 md:gap-4">
                       <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 flex items-center justify-center shadow-sm border border-slate-100 dark:border-slate-800 flex-shrink-0 group-hover:scale-110 transition-transform">
                         {typeIcons[n.type] || <Bell size={16} className="text-slate-400" />}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className={`text-xs leading-relaxed ${!n.read ? 'font-bold' : 'font-medium opacity-60'}`} style={{ color: 'var(--text-primary)' }}>
+                        <p className={`text-[11px] md:text-xs leading-relaxed ${!n.read ? 'font-bold' : 'font-medium opacity-60'}`} style={{ color: 'var(--text-primary)' }}>
                           {n.message}
                         </p>
-                        <p className="text-[10px] font-medium text-slate-400 mt-1">
+                        <p className="text-[9px] font-medium text-slate-400 mt-1 uppercase tracking-tighter">
                           {new Date(n.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                         </p>
-
+ 
                         {n.type === 'PROJECT_INVITE' && n.status === 'PENDING' && (
-                          <div className="flex gap-2 mt-4">
+                          <div className="flex flex-col sm:flex-row gap-2 mt-4">
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 respondMutation.mutate({ id: n._id, action: 'accept' });
                               }}
                               disabled={respondMutation.isPending}
-                              className="flex-1 py-2 bg-indigo-600 text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50"
+                              className="flex-1 py-2.5 bg-indigo-600 text-white rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50"
                             >
                               Accept
                             </button>
@@ -153,7 +153,7 @@ export default function NotificationDropdown() {
                                 respondMutation.mutate({ id: n._id, action: 'decline' });
                               }}
                               disabled={respondMutation.isPending}
-                              className="flex-1 py-2 glass text-slate-500 rounded-lg text-[10px] font-black uppercase tracking-widest hover:text-rose-500 transition-all active:scale-95 disabled:opacity-50"
+                              className="flex-1 py-2.5 glass text-slate-500 rounded-lg text-[9px] font-black uppercase tracking-widest hover:text-rose-500 transition-all active:scale-95 disabled:opacity-50"
                             >
                               Decline
                             </button>

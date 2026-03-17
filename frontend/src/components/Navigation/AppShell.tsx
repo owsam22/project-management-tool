@@ -38,8 +38,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen relative">
       <div className="bg-illustration animate-float" />
       {showSidebar && <Sidebar />}
-      <main className={`flex-1 overflow-x-hidden relative ${showSidebar ? 'pb-20 lg:pb-0' : ''}`}>
-        {children}
+      <main className={`flex-1 overflow-x-hidden relative transition-all duration-500 ${showSidebar ? 'pb-24 lg:pb-0' : ''}`}>
+        <div className="min-h-full">
+          {children}
+        </div>
       </main>
     </div>
   );

@@ -8,6 +8,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useState } from 'react';
 import Link from 'next/link';
 import NotificationDropdown from '@/components/NotificationDropdown';
+import { Layout, Plus, Users, Clock, ArrowRight, Zap, Target, BookOpen } from 'lucide-react';
 
 export default function DashboardPage() {
   const { isAuthenticated, user, logout } = useAuthStore();
@@ -41,20 +42,49 @@ export default function DashboardPage() {
 
   return (
     <div className="animate-fade-in p-6 lg:p-10 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-        <div>
-          <h2 className="text-2xl font-extrabold" style={{ color: 'var(--text-primary)' }}>Your Projects</h2>
-          <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>Manage and collaborate on your team projects</p>
+      {/* Refined Premium Header */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-12">
+        <div className="space-y-2">
+          <div className="flex items-center gap-3 mb-1">
+            <div className="w-8 h-8 rounded-lg bg-indigo-600/10 flex items-center justify-center text-indigo-600">
+              <Zap size={16} />
+            </div>
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-600/60">Command Center v2.0</span>
+          </div>
+          <h2 className="text-4xl lg:text-5xl font-black tracking-tighter" style={{ color: 'var(--text-primary)' }}>
+            Welcome back, <span className="text-gradient">{user?.name?.split(' ')[0] || 'Base'}</span>
+          </h2>
+          <p className="text-slate-500 dark:text-slate-400 font-medium max-w-xl">
+            Your intelligence node is synchronized. You have <span className="text-indigo-600 dark:text-indigo-400 font-bold">{projects?.length || 0} active missions</span> in progress.
+          </p>
         </div>
-        <div className="flex items-center gap-3">
-          <NotificationDropdown />
-          <button
-            onClick={() => setShowCreate(true)}
-            className="px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-xl font-semibold text-white text-sm cursor-pointer shadow-lg shadow-indigo-200 dark:shadow-none transition-all active:scale-95 whitespace-nowrap"
-          >
-            + New Project
-          </button>
+        
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="hidden md:flex items-center gap-6 px-8 py-4 glass rounded-3xl border border-slate-200/50 dark:border-slate-800/50 mr-2">
+            <div className="flex flex-col">
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Total Sync</span>
+              <span className="text-xl font-black" style={{ color: 'var(--text-primary)' }}>{projects?.length || 0}</span>
+            </div>
+            <div className="w-px h-8 bg-slate-200 dark:bg-slate-800" />
+            <div className="flex flex-col">
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Roles</span>
+              <div className="flex -space-x-2 mt-1">
+                <div className="w-5 h-5 rounded-full bg-indigo-600 border-2 border-white dark:border-slate-900" title="Owner" />
+                <div className="w-5 h-5 rounded-full bg-purple-600 border-2 border-white dark:border-slate-900" title="Member" />
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <NotificationDropdown />
+            <button
+              onClick={() => setShowCreate(true)}
+              className="px-6 py-4 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-600/20 hover:bg-indigo-700 hover:scale-105 active:scale-95 transition-all cursor-pointer flex items-center gap-3"
+            >
+              <Plus size={16} />
+              New Hub
+            </button>
+          </div>
         </div>
       </div>
 
@@ -126,54 +156,80 @@ export default function DashboardPage() {
             <Link
               key={p.project._id}
               href={`/project/${p.project._id}`}
-              className="glass rounded-[2rem] p-8 card-glow group transition-all relative overflow-hidden flex flex-col h-full border border-slate-200 dark:border-slate-800 hover:border-indigo-600 dark:hover:border-indigo-500 shadow-xl shadow-slate-200/50 dark:shadow-none"
+              className="glass rounded-[2.5rem] p-8 card-glow group transition-all relative overflow-hidden flex flex-col h-full border border-slate-200/50 dark:border-slate-800/50 hover:border-indigo-500/50 shadow-xl shadow-slate-200/20 dark:shadow-none hover:-translate-y-2 duration-500"
             >
-              <div className="flex items-start justify-between mb-8">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-600 to-indigo-800 shadow-2xl shadow-indigo-500/20 flex items-center justify-center text-white text-3xl mb-4 group-hover:scale-110 group-hover:-rotate-3 transition-all duration-500">
-                  📁
+              {/* Background Accent */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-600/5 rounded-bl-[5rem] -mr-8 -mt-8 group-hover:bg-indigo-600/10 transition-colors" />
+              
+              <div className="flex items-start justify-between mb-8 relative z-10">
+                <div className="w-16 h-16 rounded-[1.5rem] bg-gradient-to-br from-indigo-600 to-purple-600 shadow-xl shadow-indigo-600/20 flex items-center justify-center text-white group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500">
+                  <Layout size={32} strokeWidth={1.5} />
                 </div>
-                <div className="flex flex-col items-end gap-3">
-                  <span className="text-[10px] bg-slate-50 dark:bg-slate-900 text-indigo-700 dark:text-indigo-400 font-black px-4 py-1.5 rounded-full uppercase tracking-widest border border-slate-100 dark:border-slate-800 shadow-sm">
+                <div className="flex flex-col items-end gap-2">
+                  <span className={`text-[9px] font-black px-3 py-1 rounded-lg uppercase tracking-widest border shadow-sm ${
+                    p.role === 'OWNER' 
+                      ? 'bg-indigo-600 text-white border-indigo-500' 
+                      : 'bg-white dark:bg-slate-900 text-slate-500 border-slate-100 dark:border-slate-800'
+                  }`}>
                     {p.role}
                   </span>
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
-                    <span className="text-[10px] font-bold text-slate-400">ACTIVE HUB</span>
+                  <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-emerald-500/5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-[8px] font-black text-emerald-600 dark:text-emerald-500 uppercase tracking-tighter">Synchronized</span>
                   </div>
                 </div>
               </div>
-              <h3 
-                className="text-2xl font-black group-hover:text-indigo-600 transition-colors mb-2 tracking-tighter"
-                style={{ color: 'var(--text-primary)' }}
-              >
-                {p.project.name}
-              </h3>
-              <p 
-                className="text-sm font-medium line-clamp-2 leading-relaxed flex-1 opacity-70"
-                style={{ color: 'var(--text-secondary)' }}
-              >
-                {p.project.description || 'No specialized intelligence mission description provided.'}
-              </p>
-              <div className="mt-10 pt-6 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-secondary)' }}>
-                <span className="opacity-50">Deployed {new Date(p.joinedAt).toLocaleDateString()}</span>
-                <span className="text-indigo-600 dark:text-indigo-400 group-hover:translate-x-2 transition-transform font-black">ACCESS DATA →</span>
+
+              <div className="relative z-10">
+                <h3 className="text-2xl font-black group-hover:text-indigo-600 transition-colors mb-3 tracking-tighter leading-tight" style={{ color: 'var(--text-primary)' }}>
+                  {p.project.name}
+                </h3>
+                <p className="text-sm font-medium line-clamp-2 leading-relaxed opacity-60 mb-8" style={{ color: 'var(--text-secondary)' }}>
+                  {p.project.description || 'No specialized intelligence mission description provided.'}
+                </p>
+              </div>
+
+              <div className="mt-auto relative z-10">
+                <div className="flex items-center gap-6 mb-6">
+                  <div className="flex items-center gap-2">
+                    <Users size={14} className="text-slate-400" />
+                    <span className="text-[10px] font-bold text-slate-500">Team Active</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Clock size={14} className="text-slate-400" />
+                    <span className="text-[10px] font-bold text-slate-500">{new Date(p.joinedAt).toLocaleDateString([], {month: 'short', day: 'numeric'})}</span>
+                  </div>
+                </div>
+                
+                <div className="pt-6 border-t border-slate-100 dark:border-slate-800/50 flex items-center justify-between group/btn">
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-indigo-600 transition-colors">Open Terminal</span>
+                  <div className="w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
+                    <ArrowRight size={14} />
+                  </div>
+                </div>
               </div>
             </Link>
           ))}
         </div>
       ) : (
-        <div className="text-center py-32 glass rounded-[3rem] border-2 border-dashed border-slate-300 dark:border-slate-800">
-          <div className="text-7xl mb-8 grayscale opacity-20">📡</div>
-          <h3 className="text-2xl font-black mb-4 tracking-tight" style={{ color: 'var(--text-primary)' }}>Terminal Empty</h3>
-          <p className="max-w-md mx-auto text-sm font-medium opacity-60 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-            Your command center has no active projects. Initialize a new project hub to begin team synchronization.
-          </p>
-          <button 
-            onClick={() => setShowCreate(true)}
-            className="mt-10 px-10 py-4 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl shadow-indigo-600/30 hover:scale-105 active:scale-95 transition-all"
-          >
-            Deploy First Hub
-          </button>
+        <div className="text-center py-24 px-6 glass rounded-[3rem] border border-slate-200/50 dark:border-slate-800/50 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-b from-indigo-500/5 to-transparent pointer-events-none" />
+          <div className="relative z-10">
+            <div className="w-24 h-24 bg-indigo-50 dark:bg-indigo-900/20 rounded-[2rem] flex items-center justify-center mx-auto mb-8 text-indigo-600 shadow-inner">
+              <BookOpen size={40} strokeWidth={1.5} />
+            </div>
+            <h3 className="text-3xl font-black mb-4 tracking-tight" style={{ color: 'var(--text-primary)' }}>Initialize Your Command</h3>
+            <p className="max-w-md mx-auto text-base font-medium opacity-60 leading-relaxed mb-10" style={{ color: 'var(--text-secondary)' }}>
+              Your command center is currently offline. Deploy your first intelligence hub to begin synchronized team operations and mission tracking.
+            </p>
+            <button 
+              onClick={() => setShowCreate(true)}
+              className="px-10 py-5 bg-indigo-600 text-white rounded-[2rem] font-black text-sm uppercase tracking-widest shadow-2xl shadow-indigo-600/30 hover:bg-indigo-700 hover:scale-105 active:scale-95 transition-all cursor-pointer inline-flex items-center gap-3"
+            >
+              <Plus size={18} />
+              Deploy Project Node
+            </button>
+          </div>
         </div>
       )}
     </div>
