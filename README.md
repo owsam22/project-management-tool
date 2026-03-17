@@ -12,8 +12,8 @@
 
 | Component | Status | Link |
 | :--- | :--- | :--- |
-| **Frontend** | 🚀 Live | [View Dashboard](https://project-management-tool-owsam22.vercel.app/) |
-| **Backend API** | 📡 Synchronized | [View API Node](https://scpm-backend-owsam22.onrender.com/api/v1) |
+| **Frontend** | 🚀 Live | [View Dashboard](https://project-management-tool-two-theta.vercel.app/) |
+| **Backend API** | 📡 Synchronized | [View API Node](https://project-management-tool-backend-zwkv.onrender.com/) |
 
 ---
 
@@ -87,4 +87,4 @@ npm run dev
 ## 👨‍💻 Author
 **Developed with ❤️ by [owsam22](https://github.com/owsam22)**
 
-Join the mission and contribute to the future of collaborative intelligence!
+Join the mission and contribute to the future of collaborative intelligence!
