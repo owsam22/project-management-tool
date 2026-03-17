@@ -7,6 +7,7 @@ import api from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
 import { useState } from 'react';
 import Link from 'next/link';
+import NotificationDropdown from '@/components/NotificationDropdown';
 
 export default function DashboardPage() {
   const { isAuthenticated, user, logout } = useAuthStore();
@@ -46,12 +47,15 @@ export default function DashboardPage() {
           <h2 className="text-2xl font-extrabold" style={{ color: 'var(--text-primary)' }}>Your Projects</h2>
           <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>Manage and collaborate on your team projects</p>
         </div>
-        <button
-          onClick={() => setShowCreate(true)}
-          className="px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-xl font-semibold text-white text-sm cursor-pointer shadow-lg shadow-indigo-200 dark:shadow-none transition-all active:scale-95"
-        >
-          + New Project
-        </button>
+        <div className="flex items-center gap-3">
+          <NotificationDropdown />
+          <button
+            onClick={() => setShowCreate(true)}
+            className="px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-xl font-semibold text-white text-sm cursor-pointer shadow-lg shadow-indigo-200 dark:shadow-none transition-all active:scale-95 whitespace-nowrap"
+          >
+            + New Project
+          </button>
+        </div>
       </div>
 
       {/* Create Project Modal */}

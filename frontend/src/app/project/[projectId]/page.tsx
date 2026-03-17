@@ -81,13 +81,21 @@ export default function ProjectPage() {
     enabled: isAuthenticated && !!projectId,
   });
 
+  const [inviteStatus, setInviteStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [inviteMessage, setInviteMessage] = useState('');
+
   const inviteMutation = useMutation({
     mutationFn: () => api.post(`/projects/${projectId}/members`, { email: inviteEmail, role: inviteRole }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['project', projectId] });
-      setShowInvite(false);
+      setInviteStatus('success');
+      setInviteMessage('Intelligence invitation sent successfully. Awaiting protocol acceptance.');
       setInviteEmail('');
     },
+    onError: (error: any) => {
+      setInviteStatus('error');
+      setInviteMessage(error.response?.data?.message || 'Failed to initialize invitation protocol.');
+    }
   });
 
   const removeMemberMutation = useMutation({
@@ -203,49 +211,75 @@ export default function ProjectPage() {
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[100] p-4 backdrop-blur-sm animate-fade-in">
           <div className="glass rounded-3xl p-8 w-full max-w-md shadow-2xl border border-white/20 dark:border-white/10">
             <h3 className="text-xl font-bold mb-6" style={{ color: 'var(--text-primary)' }}>Invite Team Member</h3>
-            <form onSubmit={(e) => { e.preventDefault(); inviteMutation.mutate(); }} className="space-y-5">
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-slate-400 mb-2">Member Email</label>
-                <input
-                  type="email"
-                  value={inviteEmail}
-                  onChange={(e) => setInviteEmail(e.target.value)}
-                  placeholder="name@company.com"
-                  className="w-full px-4 py-3 rounded-2xl bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-4 focus:ring-indigo-50 dark:focus:ring-indigo-900/20 transition-all font-medium"
-                  style={{ color: 'var(--text-primary)' }}
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-slate-400 mb-2">Access Role</label>
-                <select
-                  value={inviteRole}
-                  onChange={(e) => setInviteRole(e.target.value)}
-                  className="w-full px-4 py-3 rounded-2xl bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-4 focus:ring-indigo-50 dark:focus:ring-indigo-900/20 transition-all font-bold appearance-none"
-                  style={{ color: 'var(--text-primary)' }}
-                >
-                  <option value="ADMIN">Administrator</option>
-                  <option value="MEMBER">Standard Member</option>
-                  <option value="VIEWER">Read Only Viewer</option>
-                </select>
-              </div>
-              <div className="flex gap-3 pt-4">
+            {inviteStatus === 'idle' ? (
+              <form onSubmit={(e) => { e.preventDefault(); inviteMutation.mutate(); }} className="space-y-5">
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-400 mb-2">Member Email</label>
+                  <input
+                    type="email"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    placeholder="name@company.com"
+                    className="w-full px-4 py-3 rounded-2xl bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-4 focus:ring-indigo-50 dark:focus:ring-indigo-900/20 transition-all font-medium"
+                    style={{ color: 'var(--text-primary)' }}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-400 mb-2">Access Role</label>
+                  <select
+                    value={inviteRole}
+                    onChange={(e) => setInviteRole(e.target.value)}
+                    className="w-full px-4 py-3 rounded-2xl bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-4 focus:ring-indigo-50 dark:focus:ring-indigo-900/20 transition-all font-bold appearance-none"
+                    style={{ color: 'var(--text-primary)' }}
+                  >
+                    <option value="ADMIN">Administrator</option>
+                    <option value="MEMBER">Standard Member</option>
+                    <option value="VIEWER">Read Only Viewer</option>
+                  </select>
+                </div>
+                <div className="flex gap-3 pt-4">
+                  <button 
+                    type="submit" 
+                    disabled={inviteMutation.isPending}
+                    className="flex-1 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl font-bold text-white shadow-lg shadow-indigo-100 dark:shadow-none transition-all active:scale-95 disabled:opacity-50"
+                  >
+                    {inviteMutation.isPending ? 'Sending...' : 'Send Invite'}
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={() => setShowInvite(false)} 
+                    className="px-6 py-3 border border-slate-200 dark:border-slate-700 rounded-2xl font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-all cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div className="text-center space-y-6 animate-in fade-in zoom-in-95 duration-300">
+                <div className={`w-20 h-20 rounded-full mx-auto flex items-center justify-center text-3xl ${inviteStatus === 'success' ? 'bg-emerald-50 text-emerald-500' : 'bg-rose-50 text-rose-500'}`}>
+                  {inviteStatus === 'success' ? '✓' : '!'}
+                </div>
+                <div>
+                  <p className="font-bold text-lg mb-2" style={{ color: 'var(--text-primary)' }}>
+                    {inviteStatus === 'success' ? 'Protocol Synchronized' : 'Sync Error'}
+                  </p>
+                  <p className="text-sm opacity-60 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                    {inviteMessage}
+                  </p>
+                </div>
                 <button 
-                  type="submit" 
-                  disabled={inviteMutation.isPending}
-                  className="flex-1 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl font-bold text-white shadow-lg shadow-indigo-100 dark:shadow-none transition-all active:scale-95 disabled:opacity-50"
+                  onClick={() => {
+                    setShowInvite(false);
+                    setInviteStatus('idle');
+                    setInviteMessage('');
+                  }}
+                  className="w-full py-4 bg-slate-100 dark:bg-slate-800 rounded-2xl font-bold text-sm tracking-widest uppercase hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
                 >
-                  {inviteMutation.isPending ? 'Sending...' : 'Send Invite'}
-                </button>
-                <button 
-                  type="button" 
-                  onClick={() => setShowInvite(false)} 
-                  className="px-6 py-3 border border-slate-200 dark:border-slate-700 rounded-2xl font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-all cursor-pointer"
-                >
-                  Cancel
+                  Close Terminal
                 </button>
               </div>
-            </form>
+            )}
           </div>
         </div>
       )}

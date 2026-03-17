@@ -3,6 +3,8 @@ import { ProjectMember } from '../models/projectMember.model.js';
 import { Board } from '../models/board.model.js';
 import { List } from '../models/list.model.js';
 import { User } from '../models/user.model.js';
+import { Notification } from '../models/notification.model.js';
+import * as notifService from './notification.service.js';
 
 export const createProject = async (name, description, ownerId) => {
   const project = await Project.create({ name, description, ownerId });
@@ -50,17 +52,46 @@ export const inviteMember = async (projectId, inviterId, email, role = 'MEMBER')
     throw { statusCode: 403, message: 'Insufficient privileges to invite members' };
   }
 
-  const userToInvite = await User.findOne({ email });
+  const normalizedEmail = email.toLowerCase();
+  const userToInvite = await User.findOne({ email: normalizedEmail });
   if (!userToInvite) {
     throw { statusCode: 404, message: 'No user found with this email' };
   }
 
-  const existing = await ProjectMember.findOne({ projectId, userId: userToInvite._id });
-  if (existing) {
+  if (userToInvite._id.toString() === inviterId.toString()) {
+    throw { statusCode: 400, message: 'You cannot invite yourself' };
+  }
+
+  const existingMember = await ProjectMember.findOne({ projectId, userId: userToInvite._id });
+  if (existingMember) {
     throw { statusCode: 400, message: 'User is already a member of this project' };
   }
 
-  return await ProjectMember.create({ projectId, userId: userToInvite._id, role });
+  const existingInvite = await Notification.findOne({
+    userId: userToInvite._id,
+    projectId,
+    type: 'PROJECT_INVITE',
+    status: 'PENDING',
+  });
+  if (existingInvite) {
+    throw { statusCode: 400, message: 'An active invitation for this user already exists' };
+  }
+
+  const inviterUser = await User.findById(inviterId);
+  const inviterName = inviterUser ? inviterUser.name : 'Someone';
+  const project = await Project.findById(projectId);
+
+  return await notifService.createNotification(
+    userToInvite._id,
+    'PROJECT_INVITE',
+    `${inviterName} invited you to join the project "${project.name}"`,
+    projectId,
+    null,
+    {
+      status: 'PENDING',
+      actionData: { projectId, role },
+    }
+  );
 };
 
 export const leaveProject = async (projectId, userId) => {
@@ -90,4 +121,13 @@ export const removeMember = async (projectId, adminId, userIdToRemove) => {
   }
 
   await ProjectMember.deleteOne({ projectId, userId: userIdToRemove });
+
+  // Notify the user they were removed
+  const project = await Project.findById(projectId);
+  return await notifService.createNotification(
+    userIdToRemove,
+    'MEMBER_REMOVED',
+    `You have been removed from the project "${project.name}"`,
+    projectId
+  );
 };

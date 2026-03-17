@@ -41,6 +41,15 @@ export const respondToInvite = async (req, res, next) => {
     const { action } = req.body; // 'accept' or 'decline'
     if (!action) throw { statusCode: 400, message: 'Action (accept/decline) is required' };
     const result = await notifService.respondToInvite(req.params.notificationId, req.user.userId, action);
+    
+    // Real-time broadcast for join notifications
+    const io = req.app.get('io');
+    if (io && result.broadcastNotifications) {
+      result.broadcastNotifications.forEach((notif) => {
+        io.to(`user_${notif.userId}`).emit('notification_received', notif);
+      });
+    }
+
     res.status(200).json({ status: 'success', data: result });
   } catch (error) {
     next(error);

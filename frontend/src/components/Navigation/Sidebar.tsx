@@ -65,13 +65,13 @@ export default function Sidebar() {
               <h1 className="text-2xl font-black tracking-tighter bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Velo</h1>
             </div>
           )}
-          <button 
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="p-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all text-slate-400 hover:text-indigo-600 shadow-sm"
-          >
-            {isCollapsed ? <ChevronRight size={20} /> : <Menu size={20} />}
-          </button>
-        </div>
+            <button 
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className="p-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all text-slate-400 hover:text-indigo-600 shadow-sm"
+            >
+              {isCollapsed ? <ChevronRight size={20} /> : <Menu size={20} />}
+            </button>
+          </div>
 
         {/* Navigation */}
         <nav className="flex-1 px-6 space-y-2 pt-6">

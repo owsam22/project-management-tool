@@ -33,8 +33,15 @@ export const invite = async (req, res, next) => {
   try {
     const { email, role } = req.body;
     if (!email) throw { statusCode: 400, message: 'Email is required' };
-    const member = await projectService.inviteMember(req.params.projectId, req.user.userId, email, role || 'MEMBER');
-    res.status(201).json({ status: 'success', data: member });
+    const notification = await projectService.inviteMember(req.params.projectId, req.user.userId, email, role || 'MEMBER');
+    
+    // Emit socket event for real-time update
+    const io = req.app.get('io');
+    if (io) {
+      io.to(`user_${notification.userId}`).emit('notification_received', notification);
+    }
+
+    res.status(201).json({ status: 'success', data: notification });
   } catch (error) {
     next(error);
   }
@@ -52,7 +59,14 @@ export const leave = async (req, res, next) => {
 export const removeMember = async (req, res, next) => {
   try {
     const { userId } = req.params;
-    await projectService.removeMember(req.params.projectId, req.user.userId, userId);
+    const notification = await projectService.removeMember(req.params.projectId, req.user.userId, userId);
+    
+    // Real-time notification for the removed user
+    const io = req.app.get('io');
+    if (io) {
+      io.to(`user_${notification.userId}`).emit('notification_received', notification);
+    }
+    
     res.status(200).json({ status: 'success', message: 'Member removed' });
   } catch (error) {
     next(error);

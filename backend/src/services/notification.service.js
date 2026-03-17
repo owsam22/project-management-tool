@@ -1,5 +1,7 @@
 import { Notification } from '../models/notification.model.js';
 import { ProjectMember } from '../models/projectMember.model.js';
+import { User } from '../models/user.model.js';
+import { Project } from '../models/project.model.js';
 
 export const createNotification = async (userId, type, message, projectId = null, taskId = null, extra = {}) => {
   return await Notification.create({ userId, type, message, projectId, taskId, ...extra });
@@ -53,7 +55,23 @@ export const respondToInvite = async (notificationId, userId, action) => {
     notification.read = true;
     await notification.save();
 
-    return { accepted: true, projectId };
+    // Notify other members that someone joined
+    const joiningUser = await User.findById(userId);
+    const project = await Project.findById(projectId);
+    const otherMembers = await ProjectMember.find({ projectId, userId: { $ne: userId } });
+    
+    const broadcastNotifications = await Promise.all(
+      otherMembers.map((m) =>
+        createNotification(
+          m.userId,
+          'MEMBER_JOINED',
+          `${joiningUser.name} has joined the project "${project.name}"`,
+          projectId
+        )
+      )
+    );
+
+    return { accepted: true, projectId, broadcastNotifications };
   } else if (action === 'decline') {
     notification.status = 'DECLINED';
     notification.read = true;
